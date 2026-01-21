@@ -656,6 +656,93 @@
             font-size: 1.1rem;
         }
 
+        /* Power Button */
+        .power-btn {
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            background: var(--btn-bg);
+            border: 2px solid var(--btn-border);
+            color: var(--text-tertiary);
+            font-size: 1.2rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .power-btn:hover {
+            background: var(--btn-hover-bg);
+            border-color: var(--glass-highlight);
+            color: var(--text-primary);
+        }
+
+        .power-btn.on {
+            background: linear-gradient(135deg, var(--success), rgba(0, 212, 170, 0.7));
+            border-color: var(--success);
+            color: white;
+            box-shadow: 0 0 20px var(--success-glow), 0 4px 15px var(--success-glow);
+        }
+
+        .power-btn.off {
+            background: linear-gradient(135deg, var(--accent), rgba(255, 77, 109, 0.7));
+            border-color: var(--accent);
+            color: white;
+            box-shadow: 0 0 20px var(--accent-glow), 0 4px 15px var(--accent-glow);
+            animation: powerOffPulse 2s ease-in-out infinite;
+        }
+
+        @keyframes powerOffPulse {
+            0%, 100% { box-shadow: 0 0 20px var(--accent-glow), 0 4px 15px var(--accent-glow); }
+            50% { box-shadow: 0 0 30px var(--accent-glow), 0 4px 25px var(--accent-glow); }
+        }
+
+        /* Powered Off State */
+        .powered-off #controls {
+            opacity: 0.3;
+            pointer-events: none;
+            filter: grayscale(50%);
+            transition: all 0.5s ease;
+        }
+
+        .powered-off .power-off-overlay {
+            display: flex;
+        }
+
+        .power-off-overlay {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            flex-direction: column;
+            align-items: center;
+            gap: 16px;
+            z-index: 50;
+            text-align: center;
+            padding: 40px;
+        }
+
+        .power-off-overlay .power-icon {
+            font-size: 4rem;
+            color: var(--accent);
+            animation: powerOffPulse 2s ease-in-out infinite;
+        }
+
+        .power-off-overlay .power-text {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: var(--text-secondary);
+            letter-spacing: 2px;
+            text-transform: uppercase;
+        }
+
+        .power-off-overlay .power-hint {
+            font-size: 0.85rem;
+            color: var(--text-tertiary);
+        }
+
         /* Card Management in Settings */
         .card-manager {
             margin-top: 20px;
@@ -1223,7 +1310,10 @@
     <div class="container">
         <div class="header">
             <h1>HTP-1 Controller</h1>
-            <div style="display: flex; align-items: center; gap: 16px;">
+            <div style="display: flex; align-items: center; gap: 12px;">
+                <button class="power-btn" id="power-btn" onclick="togglePower()" title="Power On/Off">
+                    &#9211;
+                </button>
                 <button class="theme-toggle" id="theme-toggle" onclick="toggleTheme()">
                     <span class="icon" id="theme-icon">&#9790;</span>
                 </button>
@@ -1232,6 +1322,13 @@
                     <div class="status-dot" id="status-dot"></div>
                 </div>
             </div>
+        </div>
+
+        <!-- Power Off Overlay -->
+        <div class="power-off-overlay">
+            <div class="power-icon">&#9211;</div>
+            <div class="power-text">Powered Off</div>
+            <div class="power-hint">Tap the power button to turn on</div>
         </div>
 
         <div id="main-content">
@@ -1550,11 +1647,37 @@
 
         // Update UI from MSO state
         function updateUI() {
+            updatePowerState();
             updateInputGrid();
             updateVolumeDisplay();
             updateLoudnessDisplay();
             updateUpmixGrid();
             updatePresetList();
+        }
+
+        // Power control
+        function updatePowerState() {
+            const powerBtn = document.getElementById('power-btn');
+            const isPoweredOn = mso.powerIsOn !== false; // Default to on if undefined
+
+            powerBtn.classList.remove('on', 'off');
+
+            if (isPoweredOn) {
+                powerBtn.classList.add('on');
+                document.body.classList.remove('powered-off');
+            } else {
+                powerBtn.classList.add('off');
+                document.body.classList.add('powered-off');
+            }
+        }
+
+        function togglePower() {
+            const isPoweredOn = mso.powerIsOn !== false;
+            const newPowerState = !isPoweredOn;
+
+            sendChange('/powerIsOn', newPowerState);
+            mso.powerIsOn = newPowerState;
+            updatePowerState();
         }
 
         // Input grid
