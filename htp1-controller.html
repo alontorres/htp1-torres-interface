@@ -228,9 +228,13 @@
 
         /* Input Grid */
         .input-grid {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
+            display: flex;
+            flex-wrap: wrap;
             gap: 10px;
+        }
+
+        .input-grid .input-btn {
+            flex: 1 1 80px;
         }
 
         /* Upmix Grid */
@@ -854,9 +858,22 @@
             display: flex;
             flex-direction: column;
             gap: 6px;
-            max-height: 160px;
+            max-height: min(160px, 22vh);
             overflow-y: auto;
             padding-right: 4px;
+        }
+
+        /* Taller screens get more space for card list */
+        @media (min-height: 550px) {
+            .card-list {
+                max-height: min(200px, 28vh);
+            }
+        }
+
+        @media (min-height: 650px) {
+            .card-list {
+                max-height: none;
+            }
         }
 
         .card-item {
@@ -1261,15 +1278,8 @@
                 gap: 16px;
             }
 
-            /* Cards are positioned by their data-card-id for flexibility with reordering */
-            #controls .card[data-card-id="input"] {
-                grid-column: 1 / -1;
-            }
-
-            #controls .card[data-card-id="volume"],
-            #controls .card[data-card-id="loudness"],
-            #controls .card[data-card-id="upmix"],
-            #controls .card[data-card-id="presets"] {
+            /* All cards span 1 column for flexible reordering */
+            #controls .card {
                 grid-column: span 1;
             }
 
@@ -1359,20 +1369,10 @@
                 padding: 24px;
             }
 
-            /* 3-column layout: Input spans 2, others fit in remaining space */
-            #controls .card[data-card-id="input"] {
-                grid-column: span 2;
-            }
+            /* All cards span 1 for flexible reordering */
 
-            #controls .card[data-card-id="volume"],
-            #controls .card[data-card-id="loudness"],
-            #controls .card[data-card-id="upmix"],
-            #controls .card[data-card-id="presets"] {
-                grid-column: span 1;
-            }
-
-            .input-grid {
-                grid-template-columns: repeat(6, 1fr);
+            .input-grid .input-btn {
+                flex: 1 1 100px;
             }
 
             .preset-list {
@@ -1391,20 +1391,10 @@
                 gap: 24px;
             }
 
-            /* First row: Input (2 cols), Volume, Loudness */
-            #controls .card[data-card-id="input"] {
-                grid-column: span 2;
-            }
+            /* All cards span 1 for flexible reordering */
 
-            #controls .card[data-card-id="volume"],
-            #controls .card[data-card-id="loudness"],
-            #controls .card[data-card-id="upmix"],
-            #controls .card[data-card-id="presets"] {
-                grid-column: span 1;
-            }
-
-            .input-grid {
-                grid-template-columns: repeat(4, 1fr);
+            .input-grid .input-btn {
+                flex: 1 1 110px;
             }
 
             .preset-list {
@@ -1698,7 +1688,7 @@
             presets: { id: 'presets-card', label: 'Presets' }
         };
 
-        const DEFAULT_CARD_ORDER = ['input', 'volume', 'loudness', 'upmix', 'presets'];
+        const DEFAULT_CARD_ORDER = ['volume', 'loudness', 'input', 'presets', 'upmix'];
         const DEFAULT_CARD_VISIBILITY = { input: true, volume: true, loudness: true, upmix: true, presets: true };
 
         // Upmixer options
