@@ -30,10 +30,10 @@
             --glass-border: rgba(255, 255, 255, 0.08);
             --glass-highlight: rgba(255, 255, 255, 0.1);
             --accent: #ff4d6d;
-            --accent-glow: rgba(255, 77, 109, 0.4);
+            --accent-glow: rgba(255, 77, 109, 0.2);
             --accent-text: #ff4d6d;
             --success: #00d4aa;
-            --success-glow: rgba(0, 212, 170, 0.4);
+            --success-glow: rgba(0, 212, 170, 0.2);
             --success-subtle: rgba(0, 212, 170, 0.15);
             --success-text: #00d4aa;
             --text-primary: #ffffff;
@@ -60,10 +60,10 @@
             --glass-border: rgba(0, 0, 0, 0.08);
             --glass-highlight: rgba(255, 255, 255, 0.9);
             --accent: #e63956;
-            --accent-glow: rgba(230, 57, 86, 0.25);
+            --accent-glow: rgba(230, 57, 86, 0.12);
             --accent-text: #d42f4a;
             --success: #00b894;
-            --success-glow: rgba(0, 184, 148, 0.25);
+            --success-glow: rgba(0, 184, 148, 0.12);
             --success-subtle: rgba(0, 184, 148, 0.12);
             --success-text: #00a383;
             --text-primary: #1a1a2e;
@@ -116,8 +116,8 @@
             z-index: 1;
             max-width: 480px;
             margin: 0 auto;
-            padding: 20px;
-            padding-bottom: 120px;
+            padding: 16px;
+            padding-bottom: 80px;
         }
 
         /* Header */
@@ -125,8 +125,8 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 16px 0;
-            margin-bottom: 24px;
+            padding: 12px 0;
+            margin-bottom: 16px;
         }
 
         .header h1 {
@@ -178,8 +178,8 @@
             -webkit-backdrop-filter: blur(20px);
             border: 1px solid var(--glass-border);
             border-radius: var(--border-radius);
-            padding: 24px;
-            margin-bottom: 20px;
+            padding: 16px;
+            margin-bottom: 12px;
             position: relative;
             overflow: hidden;
             transition: all 0.3s ease;
@@ -195,17 +195,12 @@
             background: linear-gradient(90deg, transparent, var(--glass-highlight), transparent);
         }
 
-        .card:hover {
-            border-color: var(--glass-highlight);
-            transform: translateY(-2px);
-        }
-
         .card-title {
-            font-size: 0.7rem;
+            font-size: 0.75rem;
             text-transform: uppercase;
             letter-spacing: 2px;
             color: var(--text-tertiary);
-            margin-bottom: 20px;
+            margin-bottom: 12px;
             font-weight: 600;
             display: flex;
             align-items: center;
@@ -241,7 +236,7 @@
         /* Upmix Grid */
         .upmix-grid {
             display: grid;
-            grid-template-columns: repeat(2, 1fr);
+            grid-template-columns: repeat(3, 1fr);
             gap: 10px;
         }
 
@@ -249,9 +244,9 @@
             background: var(--btn-bg);
             border: 1px solid var(--btn-border);
             border-radius: var(--border-radius-sm);
-            padding: 16px 12px;
+            padding: 14px 10px;
             color: var(--text-secondary);
-            font-size: 0.8rem;
+            font-size: 0.85rem;
             font-weight: 600;
             letter-spacing: 0.3px;
             cursor: pointer;
@@ -282,7 +277,7 @@
             border-radius: var(--border-radius-sm);
             padding: 14px 10px;
             color: var(--text-secondary);
-            font-size: 0.75rem;
+            font-size: 0.85rem;
             font-weight: 600;
             letter-spacing: 0.3px;
             cursor: pointer;
@@ -324,14 +319,14 @@
             display: flex;
             justify-content: flex-start;
             align-items: baseline;
-            margin-bottom: 20px;
+            margin-bottom: 12px;
         }
 
         .control-value {
-            font-size: 4rem;
+            font-size: 3rem;
             font-weight: 200;
             font-variant-numeric: tabular-nums;
-            letter-spacing: -3px;
+            letter-spacing: -2px;
             line-height: 1;
             background: linear-gradient(180deg, var(--text-gradient-start) 0%, var(--text-gradient-end) 100%);
             -webkit-background-clip: text;
@@ -379,13 +374,13 @@
             background: var(--btn-bg);
             border: 1px solid var(--btn-border);
             border-radius: var(--border-radius-sm);
-            padding: 16px 8px;
+            padding: 12px 6px;
             color: var(--text-primary);
             font-size: 1rem;
             font-weight: 500;
             cursor: pointer;
             transition: all 0.2s ease;
-            min-height: 54px;
+            min-height: 44px;
             position: relative;
             overflow: hidden;
         }
@@ -420,7 +415,7 @@
             background: var(--btn-bg);
             font-size: 0.75rem;
             font-weight: 600;
-            letter-spacing: 1px;
+            letter-spacing: 0.5px;
         }
 
         .ctrl-btn.mute-btn.active {
@@ -432,7 +427,7 @@
         .ctrl-btn.off-btn {
             font-size: 0.75rem;
             font-weight: 600;
-            letter-spacing: 1px;
+            letter-spacing: 0.5px;
         }
 
         .ctrl-btn.off-btn.active {
@@ -632,27 +627,41 @@
             transform: scale(0.9);
         }
 
-        /* Theme Toggle */
-        .theme-toggle {
-            background: var(--glass-bg);
-            border: 1px solid var(--glass-border);
-            border-radius: 20px;
-            padding: 8px 12px;
+        /* Theme Selector in Settings */
+        .theme-selector {
+            display: flex;
+            gap: 10px;
+        }
+
+        .theme-option {
+            flex: 1;
+            background: var(--btn-bg);
+            border: 1px solid var(--btn-border);
+            border-radius: var(--border-radius-sm);
+            padding: 12px 16px;
             color: var(--text-secondary);
-            font-size: 1rem;
+            font-size: 0.9rem;
+            font-weight: 500;
             cursor: pointer;
             transition: all 0.3s ease;
             display: flex;
             align-items: center;
-            gap: 6px;
+            justify-content: center;
+            gap: 8px;
         }
 
-        .theme-toggle:hover {
+        .theme-option:hover {
             background: var(--btn-hover-bg);
             color: var(--text-primary);
         }
 
-        .theme-toggle .icon {
+        .theme-option.active {
+            background: linear-gradient(135deg, var(--accent-glow), rgba(255, 77, 109, 0.1));
+            border-color: var(--accent);
+            color: var(--text-primary);
+        }
+
+        .theme-option .icon {
             font-size: 1.1rem;
         }
 
@@ -753,21 +762,24 @@
             text-transform: uppercase;
             letter-spacing: 1px;
             color: var(--text-tertiary);
-            margin-bottom: 12px;
+            margin-bottom: 8px;
             font-weight: 500;
         }
 
         .card-list {
             display: flex;
             flex-direction: column;
-            gap: 8px;
+            gap: 6px;
+            max-height: 160px;
+            overflow-y: auto;
+            padding-right: 4px;
         }
 
         .card-item {
             display: flex;
             align-items: center;
-            gap: 12px;
-            padding: 12px 14px;
+            gap: 10px;
+            padding: 8px 12px;
             background: var(--btn-bg);
             border: 1px solid var(--btn-border);
             border-radius: var(--border-radius-sm);
@@ -846,14 +858,21 @@
             -webkit-backdrop-filter: blur(20px);
             border: 1px solid var(--glass-border);
             border-radius: var(--border-radius);
-            padding: 28px;
+            padding: 24px;
             width: 100%;
             max-width: 400px;
-            max-height: 80vh;
-            overflow-y: auto;
+            max-height: 85vh;
+            display: flex;
+            flex-direction: column;
             box-shadow: 0 25px 50px rgba(0, 0, 0, 0.3);
             transform: translateY(20px);
             transition: transform 0.4s ease;
+        }
+
+        .modal-content {
+            flex: 1;
+            overflow-y: auto;
+            padding-right: 4px;
         }
 
         .modal-overlay.active .modal {
@@ -861,18 +880,19 @@
         }
 
         .modal h2 {
-            margin: 0 0 24px 0;
-            font-size: 1.4rem;
+            margin: 0 0 16px 0;
+            font-size: 1.3rem;
             font-weight: 600;
             letter-spacing: -0.5px;
             background: linear-gradient(135deg, var(--text-gradient-start) 0%, var(--text-gradient-end) 100%);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
+            flex-shrink: 0;
         }
 
         .form-group {
-            margin-bottom: 20px;
+            margin-bottom: 16px;
         }
 
         .form-group label {
@@ -1008,7 +1028,8 @@
         .modal-buttons {
             display: flex;
             gap: 12px;
-            margin-top: 28px;
+            margin-top: 16px;
+            flex-shrink: 0;
         }
 
         .modal-btn {
@@ -1136,23 +1157,24 @@
             }
             .container {
                 max-width: 900px;
-                padding: 32px;
+                padding: 24px;
+                padding-bottom: 80px;
             }
 
             .header {
-                padding: 20px 0;
-                margin-bottom: 32px;
+                padding: 16px 0;
+                margin-bottom: 20px;
             }
 
             .header h1 {
-                font-size: 2rem;
+                font-size: 1.75rem;
             }
 
             #controls {
                 display: grid;
                 grid-template-columns: 1fr 1fr;
                 grid-template-rows: auto auto auto;
-                gap: 24px;
+                gap: 16px;
             }
 
             /* Cards are positioned by their data-card-id for flexibility with reordering */
@@ -1161,80 +1183,74 @@
             }
 
             #controls .card[data-card-id="volume"],
-            #controls .card[data-card-id="loudness"] {
+            #controls .card[data-card-id="loudness"],
+            #controls .card[data-card-id="upmix"],
+            #controls .card[data-card-id="presets"] {
                 grid-column: span 1;
             }
 
-            #controls .card[data-card-id="upmix"],
-            #controls .card[data-card-id="presets"] {
-                grid-column: 1 / -1;
-            }
-
             .card {
-                padding: 28px;
+                padding: 20px;
                 margin-bottom: 0;
             }
 
             .card-title {
                 font-size: 0.75rem;
-                margin-bottom: 24px;
+                margin-bottom: 14px;
             }
 
             .control-value {
-                font-size: 4.5rem;
+                font-size: 3.5rem;
             }
 
             .control-header {
-                margin-bottom: 24px;
+                margin-bottom: 14px;
             }
 
             .input-grid {
-                gap: 12px;
+                gap: 10px;
             }
 
             .input-btn {
-                padding: 16px 12px;
-                font-size: 0.85rem;
-                min-height: 56px;
-            }
-
-            .ctrl-btn {
-                padding: 18px 12px;
-                font-size: 1.1rem;
-                min-height: 58px;
-            }
-
-            .ctrl-btn.level-btn {
-                padding: 14px 8px;
-                font-size: 0.9rem;
+                padding: 14px 10px;
                 min-height: 48px;
             }
 
+            .ctrl-btn {
+                padding: 14px 8px;
+                min-height: 48px;
+            }
+
+            .ctrl-btn.level-btn {
+                padding: 10px 6px;
+                min-height: 40px;
+            }
+
             .control-buttons {
-                gap: 12px;
+                gap: 10px;
             }
 
             .preset-list {
                 display: grid;
                 grid-template-columns: repeat(2, 1fr);
-                gap: 16px;
+                gap: 12px;
             }
 
             .preset-item {
-                padding: 20px;
+                padding: 16px;
             }
 
             .add-preset-btn {
                 grid-column: 1 / -1;
-                padding: 20px;
+                padding: 16px;
             }
 
             .settings-btn {
-                bottom: 32px;
-                right: 32px;
-                width: 56px;
-                height: 56px;
-                font-size: 1.4rem;
+                bottom: 24px;
+                right: 24px;
+                width: 52px;
+                height: 52px;
+                font-size: 1.3rem;
             }
         }
 
@@ -1242,23 +1258,33 @@
         @media (min-width: 1200px) {
             .container {
                 max-width: 1100px;
-                padding: 40px;
+                padding: 32px;
+                padding-bottom: 80px;
             }
 
             .header h1 {
-                font-size: 2.2rem;
+                font-size: 1.75rem;
             }
 
             #controls {
-                gap: 28px;
+                grid-template-columns: 1fr 1fr 1fr;
+                gap: 20px;
             }
 
             .card {
-                padding: 32px;
+                padding: 24px;
             }
 
-            .control-value {
-                font-size: 5rem;
+            /* 3-column layout: Input spans 2, others fit in remaining space */
+            #controls .card[data-card-id="input"] {
+                grid-column: span 2;
+            }
+
+            #controls .card[data-card-id="volume"],
+            #controls .card[data-card-id="loudness"],
+            #controls .card[data-card-id="upmix"],
+            #controls .card[data-card-id="presets"] {
+                grid-column: span 1;
             }
 
             .input-grid {
@@ -1266,7 +1292,7 @@
             }
 
             .preset-list {
-                grid-template-columns: repeat(3, 1fr);
+                grid-template-columns: repeat(2, 1fr);
             }
         }
 
@@ -1277,31 +1303,28 @@
             }
 
             #controls {
-                grid-template-columns: 1fr 1fr 1fr;
+                grid-template-columns: repeat(4, 1fr);
+                gap: 24px;
             }
 
-            /* Use data-card-id for positioning flexibility */
+            /* First row: Input (2 cols), Volume, Loudness */
             #controls .card[data-card-id="input"] {
-                grid-column: span 1;
-                grid-row: span 2;
+                grid-column: span 2;
             }
 
             #controls .card[data-card-id="volume"],
             #controls .card[data-card-id="loudness"],
-            #controls .card[data-card-id="upmix"] {
+            #controls .card[data-card-id="upmix"],
+            #controls .card[data-card-id="presets"] {
                 grid-column: span 1;
             }
 
-            #controls .card[data-card-id="presets"] {
-                grid-column: 2 / -1;
-            }
-
             .input-grid {
-                grid-template-columns: repeat(2, 1fr);
+                grid-template-columns: repeat(4, 1fr);
             }
 
             .preset-list {
-                grid-template-columns: repeat(2, 1fr);
+                grid-template-columns: 1fr;
             }
         }
     </style>
@@ -1313,9 +1336,6 @@
             <div style="display: flex; align-items: center; gap: 12px;">
                 <button class="power-btn" id="power-btn" onclick="togglePower()" title="Power On/Off">
                     &#9211;
-                </button>
-                <button class="theme-toggle" id="theme-toggle" onclick="toggleTheme()">
-                    <span class="icon" id="theme-icon">&#9790;</span>
                 </button>
                 <div class="connection-status">
                     <span id="connection-text">Disconnected</span>
@@ -1414,15 +1434,29 @@
     <div class="modal-overlay" id="settings-modal">
         <div class="modal">
             <h2>Settings</h2>
-            <div class="form-group">
-                <label>HTP-1 IP Address</label>
-                <input type="text" id="ip-input" placeholder="e.g., 192.168.1.100">
-            </div>
+            <div class="modal-content">
+                <div class="form-group">
+                    <label>HTP-1 IP Address</label>
+                    <input type="text" id="ip-input" placeholder="e.g., 192.168.1.100">
+                </div>
 
-            <div class="card-manager">
-                <div class="card-manager-title">Visible Cards (drag to reorder)</div>
-                <div class="card-list" id="card-list">
-                    <!-- Populated dynamically -->
+                <div class="form-group">
+                    <label>Appearance</label>
+                    <div class="theme-selector">
+                        <button class="theme-option" id="theme-dark" onclick="setTheme('dark')">
+                            <span class="icon">&#9790;</span> Dark
+                        </button>
+                        <button class="theme-option" id="theme-light" onclick="setTheme('light')">
+                            <span class="icon">&#9728;</span> Light
+                        </button>
+                    </div>
+                </div>
+
+                <div class="card-manager">
+                    <div class="card-manager-title">Visible Cards (drag to reorder)</div>
+                    <div class="card-list" id="card-list">
+                        <!-- Populated dynamically -->
+                    </div>
                 </div>
             </div>
 
@@ -1514,6 +1548,7 @@
 
         // Upmixer options
         const UPMIX_OPTIONS = [
+            { value: 'off', label: 'Direct' },
             { value: 'native', label: 'Native' },
             { value: 'dolby', label: 'Dolby Surround' },
             { value: 'dts', label: 'DTS Neural:X' },
@@ -2047,6 +2082,7 @@
         // Settings Modal
         function openSettingsModal() {
             document.getElementById('ip-input').value = getStoredIP();
+            updateThemeSelector();
             renderCardManager();
             document.getElementById('settings-modal').classList.add('active');
         }
@@ -2240,18 +2276,21 @@
         function setTheme(theme) {
             if (theme === 'light') {
                 document.documentElement.setAttribute('data-theme', 'light');
-                document.getElementById('theme-icon').innerHTML = '&#9728;'; // Sun
             } else {
                 document.documentElement.removeAttribute('data-theme');
-                document.getElementById('theme-icon').innerHTML = '&#9790;'; // Moon
             }
             localStorage.setItem(STORAGE_KEY_THEME, theme);
+            updateThemeSelector();
         }
 
-        function toggleTheme() {
-            const currentTheme = document.documentElement.getAttribute('data-theme');
-            const newTheme = currentTheme === 'light' ? 'dark' : 'light';
-            setTheme(newTheme);
+        function updateThemeSelector() {
+            const currentTheme = getStoredTheme();
+            const darkBtn = document.getElementById('theme-dark');
+            const lightBtn = document.getElementById('theme-light');
+            if (darkBtn && lightBtn) {
+                darkBtn.classList.toggle('active', currentTheme === 'dark');
+                lightBtn.classList.toggle('active', currentTheme === 'light');
+            }
         }
 
         // Initialize theme immediately (before DOMContentLoaded to prevent flash)
@@ -2264,7 +2303,7 @@
 
         // Initialize
         document.addEventListener('DOMContentLoaded', () => {
-            // Load saved theme and update icon
+            // Load saved theme
             setTheme(getStoredTheme());
             // Load last loudness level from storage
             lastLoudnessLevel = getStoredLoudnessLevel();

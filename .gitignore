@@ -9,8 +9,11 @@ Thumbs.db
 .idea/
 .vscode/
 
-# Claude Code session data
+# Session data
 .claude/
 
 # Local config (if any)
 config.local.js
+
+# Development notes
+.dev-notes
