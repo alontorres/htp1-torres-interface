@@ -1,0 +1,2163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>HTP-1 Controller</title>
+
+    <!-- PWA / Add to Home Screen support -->
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="HTP-1">
+    <meta name="application-name" content="HTP-1">
+    <meta name="theme-color" content="#0a0a0f">
+
+    <!-- Inline SVG icon as data URI for home screen -->
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Crect width='512' height='512' rx='90' fill='%230a0a0f'/%3E%3Ctext x='256' y='320' font-family='system-ui' font-size='200' font-weight='700' fill='%23ff4d6d' text-anchor='middle'%3EHTP%3C/text%3E%3C/svg%3E">
+    <link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Crect width='512' height='512' rx='90' fill='%230a0a0f'/%3E%3Ctext x='256' y='320' font-family='system-ui' font-size='200' font-weight='700' fill='%23ff4d6d' text-anchor='middle'%3EHTP%3C/text%3E%3C/svg%3E">
+    <style>
+        * {
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        /* Dark theme (default) */
+        :root {
+            --bg-primary: #0a0a0f;
+            --bg-gradient: linear-gradient(135deg, #0a0a0f 0%, #1a1a2e 50%, #0f0f1a 100%);
+            --glass-bg: rgba(255, 255, 255, 0.03);
+            --glass-border: rgba(255, 255, 255, 0.08);
+            --glass-highlight: rgba(255, 255, 255, 0.1);
+            --accent: #ff4d6d;
+            --accent-glow: rgba(255, 77, 109, 0.4);
+            --accent-text: #ff4d6d;
+            --success: #00d4aa;
+            --success-glow: rgba(0, 212, 170, 0.4);
+            --success-subtle: rgba(0, 212, 170, 0.15);
+            --success-text: #00d4aa;
+            --text-primary: #ffffff;
+            --text-secondary: rgba(255, 255, 255, 0.5);
+            --text-tertiary: rgba(255, 255, 255, 0.3);
+            --text-gradient-start: #fff;
+            --text-gradient-end: rgba(255, 255, 255, 0.6);
+            --warning: #ffaa00;
+            --border-radius: 20px;
+            --border-radius-sm: 12px;
+            --btn-bg: rgba(255, 255, 255, 0.04);
+            --btn-border: rgba(255, 255, 255, 0.08);
+            --btn-hover-bg: rgba(255, 255, 255, 0.08);
+            --modal-bg: rgba(20, 20, 30, 0.95);
+            --orb-accent: rgba(255, 77, 109, 0.08);
+            --orb-success: rgba(0, 212, 170, 0.06);
+        }
+
+        /* Light theme */
+        [data-theme="light"] {
+            --bg-primary: #f5f5f7;
+            --bg-gradient: linear-gradient(135deg, #f5f5f7 0%, #e8e8ed 50%, #f0f0f5 100%);
+            --glass-bg: rgba(255, 255, 255, 0.7);
+            --glass-border: rgba(0, 0, 0, 0.08);
+            --glass-highlight: rgba(255, 255, 255, 0.9);
+            --accent: #e63956;
+            --accent-glow: rgba(230, 57, 86, 0.25);
+            --accent-text: #d42f4a;
+            --success: #00b894;
+            --success-glow: rgba(0, 184, 148, 0.25);
+            --success-subtle: rgba(0, 184, 148, 0.12);
+            --success-text: #00a383;
+            --text-primary: #1a1a2e;
+            --text-secondary: rgba(26, 26, 46, 0.6);
+            --text-tertiary: rgba(26, 26, 46, 0.4);
+            --text-gradient-start: #1a1a2e;
+            --text-gradient-end: rgba(26, 26, 46, 0.7);
+            --btn-bg: rgba(0, 0, 0, 0.03);
+            --btn-border: rgba(0, 0, 0, 0.08);
+            --btn-hover-bg: rgba(0, 0, 0, 0.06);
+            --modal-bg: rgba(255, 255, 255, 0.95);
+            --orb-accent: rgba(255, 77, 109, 0.06);
+            --orb-success: rgba(0, 212, 170, 0.04);
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', Roboto, sans-serif;
+            background: var(--bg-primary);
+            background-image: var(--bg-gradient);
+            background-attachment: fixed;
+            color: var(--text-primary);
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* Animated background orbs */
+        body::before {
+            content: '';
+            position: fixed;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle at 30% 20%, var(--orb-accent) 0%, transparent 50%),
+                        radial-gradient(circle at 70% 80%, var(--orb-success) 0%, transparent 50%);
+            animation: bgFloat 20s ease-in-out infinite;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        @keyframes bgFloat {
+            0%, 100% { transform: translate(0, 0) rotate(0deg); }
+            50% { transform: translate(-2%, -2%) rotate(5deg); }
+        }
+
+        .container {
+            position: relative;
+            z-index: 1;
+            max-width: 480px;
+            margin: 0 auto;
+            padding: 20px;
+            padding-bottom: 120px;
+        }
+
+        /* Header */
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 16px 0;
+            margin-bottom: 24px;
+        }
+
+        .header h1 {
+            font-size: 1.5rem;
+            margin: 0;
+            font-weight: 700;
+            letter-spacing: -0.5px;
+            background: linear-gradient(135deg, var(--text-gradient-start) 0%, var(--text-gradient-end) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .connection-status {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 0.8rem;
+            font-weight: 500;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--accent);
+            transition: all 0.5s ease;
+            box-shadow: 0 0 0 rgba(255, 77, 109, 0);
+        }
+
+        .status-dot.connected {
+            background: var(--success);
+            box-shadow: 0 0 12px var(--success-glow), 0 0 24px var(--success-glow);
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { box-shadow: 0 0 12px var(--success-glow), 0 0 24px var(--success-glow); }
+            50% { box-shadow: 0 0 16px var(--success-glow), 0 0 32px var(--success-glow); }
+        }
+
+        /* Glass Cards */
+        .card {
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border);
+            border-radius: var(--border-radius);
+            padding: 24px;
+            margin-bottom: 20px;
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, var(--glass-highlight), transparent);
+        }
+
+        .card:hover {
+            border-color: var(--glass-highlight);
+            transform: translateY(-2px);
+        }
+
+        .card-title {
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            color: var(--text-tertiary);
+            margin-bottom: 20px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        /* Status indicator light */
+        .status-indicator {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: var(--text-tertiary);
+            transition: all 0.5s ease;
+        }
+
+        .status-indicator.active {
+            background: var(--success);
+            box-shadow: 0 0 8px var(--success-glow), 0 0 16px var(--success-glow);
+        }
+
+        .status-indicator.muted {
+            background: var(--accent);
+            box-shadow: 0 0 8px var(--accent-glow), 0 0 16px var(--accent-glow);
+        }
+
+        /* Input Grid */
+        .input-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+        }
+
+        /* Upmix Grid */
+        .upmix-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+        }
+
+        .upmix-btn {
+            background: var(--btn-bg);
+            border: 1px solid var(--btn-border);
+            border-radius: var(--border-radius-sm);
+            padding: 16px 12px;
+            color: var(--text-secondary);
+            font-size: 0.8rem;
+            font-weight: 600;
+            letter-spacing: 0.3px;
+            cursor: pointer;
+            transition: all 0.25s ease;
+            text-align: center;
+        }
+
+        .upmix-btn:hover {
+            background: var(--btn-hover-bg);
+            border-color: var(--glass-border);
+            color: var(--text-primary);
+        }
+
+        .upmix-btn:active {
+            transform: scale(0.96);
+        }
+
+        .upmix-btn.active {
+            background: linear-gradient(135deg, var(--success-glow), rgba(0, 212, 170, 0.1));
+            border-color: var(--success);
+            color: var(--success-text);
+            box-shadow: 0 0 20px var(--success-glow);
+        }
+
+        .input-btn {
+            background: var(--btn-bg);
+            border: 1px solid var(--btn-border);
+            border-radius: var(--border-radius-sm);
+            padding: 14px 10px;
+            color: var(--text-secondary);
+            font-size: 0.75rem;
+            font-weight: 600;
+            letter-spacing: 0.3px;
+            cursor: pointer;
+            transition: all 0.25s ease;
+            text-align: center;
+            min-height: 52px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .input-btn:hover {
+            background: var(--btn-hover-bg);
+            border-color: var(--glass-border);
+            color: var(--text-primary);
+        }
+
+        .input-btn:active {
+            transform: scale(0.96);
+        }
+
+        .input-btn.active {
+            background: linear-gradient(135deg, var(--accent-glow), rgba(255, 77, 109, 0.1));
+            border-color: var(--accent);
+            color: var(--text-primary);
+            box-shadow: 0 0 20px var(--accent-glow), inset 0 0 20px rgba(255, 77, 109, 0.05);
+        }
+
+        /* Control Section */
+        .control-section {
+            margin-bottom: 8px;
+        }
+
+        .control-section:last-child {
+            margin-bottom: 0;
+        }
+
+        .control-header {
+            display: flex;
+            justify-content: flex-start;
+            align-items: baseline;
+            margin-bottom: 20px;
+        }
+
+        .control-value {
+            font-size: 4rem;
+            font-weight: 200;
+            font-variant-numeric: tabular-nums;
+            letter-spacing: -3px;
+            line-height: 1;
+            background: linear-gradient(180deg, var(--text-gradient-start) 0%, var(--text-gradient-end) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            transition: all 0.3s ease;
+        }
+
+        .control-value .unit {
+            font-size: 1.2rem;
+            font-weight: 400;
+            letter-spacing: 0;
+            margin-left: 6px;
+            opacity: 0.5;
+        }
+
+        .control-value.muted {
+            background: linear-gradient(180deg, var(--accent-text) 0%, var(--accent-glow) 100%);
+            -webkit-background-clip: text;
+            background-clip: text;
+            animation: mutePulse 1.5s ease-in-out infinite;
+        }
+
+        @keyframes mutePulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+
+        .control-value.off {
+            font-size: 2.5rem;
+            font-weight: 300;
+            letter-spacing: -1px;
+            background: linear-gradient(180deg, var(--text-secondary) 0%, var(--text-tertiary) 100%);
+            -webkit-background-clip: text;
+            background-clip: text;
+        }
+
+        .control-buttons {
+            display: flex;
+            gap: 10px;
+        }
+
+        .ctrl-btn {
+            flex: 1;
+            background: var(--btn-bg);
+            border: 1px solid var(--btn-border);
+            border-radius: var(--border-radius-sm);
+            padding: 16px 8px;
+            color: var(--text-primary);
+            font-size: 1rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            min-height: 54px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .ctrl-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(180deg, var(--glass-highlight) 0%, transparent 50%);
+            opacity: 0;
+            transition: opacity 0.2s ease;
+        }
+
+        .ctrl-btn:hover::before {
+            opacity: 1;
+        }
+
+        .ctrl-btn:hover {
+            border-color: var(--glass-highlight);
+            transform: translateY(-1px);
+        }
+
+        .ctrl-btn:active {
+            transform: scale(0.96) translateY(0);
+            background: var(--btn-hover-bg);
+        }
+
+        .ctrl-btn.mute-btn {
+            background: var(--btn-bg);
+            font-size: 0.75rem;
+            font-weight: 600;
+            letter-spacing: 1px;
+        }
+
+        .ctrl-btn.mute-btn.active {
+            background: linear-gradient(135deg, var(--accent), rgba(255, 77, 109, 0.8));
+            border-color: var(--accent);
+            box-shadow: 0 4px 20px var(--accent-glow), inset 0 1px 0 rgba(255,255,255,0.2);
+        }
+
+        .ctrl-btn.off-btn {
+            font-size: 0.75rem;
+            font-weight: 600;
+            letter-spacing: 1px;
+        }
+
+        .ctrl-btn.off-btn.active {
+            background: var(--text-secondary);
+            color: var(--bg-primary);
+            border-color: var(--text-tertiary);
+        }
+
+        .ctrl-btn.level-btn {
+            font-size: 0.85rem;
+            font-weight: 500;
+            padding: 12px 6px;
+            min-height: 44px;
+            background: transparent;
+            border: 1px solid var(--btn-border);
+            color: var(--text-tertiary);
+        }
+
+        .ctrl-btn.level-btn:hover {
+            border-color: var(--success-glow);
+            color: var(--text-secondary);
+        }
+
+        .ctrl-btn.level-btn:active {
+            background: var(--success-subtle);
+        }
+
+        .ctrl-btn.level-btn.active {
+            background: linear-gradient(135deg, rgba(0, 212, 170, 0.25), rgba(0, 212, 170, 0.15));
+            border-color: rgba(0, 212, 170, 0.5);
+            color: var(--success);
+            box-shadow: 0 0 15px rgba(0, 212, 170, 0.2);
+        }
+
+        /* Editable value display */
+        .control-value-wrapper {
+            position: relative;
+            display: inline-block;
+        }
+
+        .control-value-input {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 120px;
+            height: 60px;
+            background: var(--modal-bg);
+            backdrop-filter: blur(10px);
+            border: 2px solid var(--accent);
+            border-radius: var(--border-radius-sm);
+            color: var(--text-primary);
+            font-size: 2.5rem;
+            font-weight: 200;
+            text-align: center;
+            padding: 4px;
+            display: none;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+        }
+
+        .control-value-input.visible {
+            display: block;
+        }
+
+        .control-value.editable {
+            cursor: pointer;
+            padding: 8px 16px;
+            border-radius: var(--border-radius-sm);
+            transition: all 0.3s ease;
+            margin: -8px -16px;
+        }
+
+        .control-value.editable:hover {
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        /* Presets */
+        .preset-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .preset-item {
+            background: var(--btn-bg);
+            border: 1px solid var(--btn-border);
+            border-radius: var(--border-radius-sm);
+            padding: 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            cursor: pointer;
+            transition: all 0.25s ease;
+        }
+
+        .preset-item:hover {
+            background: var(--btn-hover-bg);
+            border-color: var(--glass-border);
+            transform: translateX(4px);
+        }
+
+        .preset-item:active {
+            transform: scale(0.98);
+        }
+
+        .preset-info {
+            flex: 1;
+        }
+
+        .preset-name {
+            font-weight: 600;
+            font-size: 1rem;
+            margin-bottom: 8px;
+            color: var(--text-primary);
+        }
+
+        .preset-details {
+            font-size: 0.7rem;
+            color: var(--text-tertiary);
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .preset-detail {
+            background: var(--btn-bg);
+            padding: 4px 10px;
+            border-radius: 20px;
+            border: 1px solid var(--btn-border);
+        }
+
+        .preset-delete {
+            background: none;
+            border: none;
+            color: var(--text-tertiary);
+            font-size: 1.5rem;
+            font-weight: 300;
+            cursor: pointer;
+            padding: 4px 8px;
+            margin: -4px -8px;
+            transition: all 0.2s ease;
+            opacity: 0.5;
+        }
+
+        .preset-delete:hover {
+            color: var(--accent);
+            opacity: 1;
+        }
+
+        .add-preset-btn {
+            background: transparent;
+            border: 1px dashed var(--glass-border);
+            border-radius: var(--border-radius-sm);
+            padding: 18px;
+            color: var(--text-tertiary);
+            font-size: 0.85rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            width: 100%;
+            margin-top: 12px;
+        }
+
+        .add-preset-btn:hover {
+            border-color: var(--accent);
+            color: var(--accent);
+            background: rgba(255, 77, 109, 0.05);
+        }
+
+        /* Settings */
+        .settings-btn {
+            position: fixed;
+            bottom: 28px;
+            right: 28px;
+            width: 52px;
+            height: 52px;
+            border-radius: 50%;
+            background: var(--glass-bg);
+            backdrop-filter: blur(10px);
+            border: 1px solid var(--glass-border);
+            color: var(--text-secondary);
+            font-size: 1.25rem;
+            cursor: pointer;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+            transition: all 0.3s ease;
+            z-index: 100;
+        }
+
+        .settings-btn:hover {
+            background: var(--btn-hover-bg);
+            border-color: var(--glass-highlight);
+            color: var(--text-primary);
+            transform: rotate(45deg);
+        }
+
+        .settings-btn:active {
+            transform: scale(0.9);
+        }
+
+        /* Theme Toggle */
+        .theme-toggle {
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            border-radius: 20px;
+            padding: 8px 12px;
+            color: var(--text-secondary);
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .theme-toggle:hover {
+            background: var(--btn-hover-bg);
+            color: var(--text-primary);
+        }
+
+        .theme-toggle .icon {
+            font-size: 1.1rem;
+        }
+
+        /* Card Management in Settings */
+        .card-manager {
+            margin-top: 20px;
+        }
+
+        .card-manager-title {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--text-tertiary);
+            margin-bottom: 12px;
+            font-weight: 500;
+        }
+
+        .card-list {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .card-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 14px;
+            background: var(--btn-bg);
+            border: 1px solid var(--btn-border);
+            border-radius: var(--border-radius-sm);
+            cursor: grab;
+            transition: all 0.2s ease;
+            user-select: none;
+        }
+
+        .card-item:hover {
+            background: var(--btn-hover-bg);
+            border-color: var(--glass-border);
+        }
+
+        .card-item.dragging {
+            opacity: 0.5;
+            cursor: grabbing;
+        }
+
+        .card-item.drag-over {
+            border-color: var(--accent);
+            background: var(--accent-glow);
+        }
+
+        .card-item .drag-handle {
+            color: var(--text-tertiary);
+            font-size: 1.2rem;
+            cursor: grab;
+        }
+
+        .card-item input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+            accent-color: var(--accent);
+            cursor: pointer;
+        }
+
+        .card-item .card-label {
+            flex: 1;
+            font-size: 0.9rem;
+            font-weight: 500;
+            color: var(--text-primary);
+        }
+
+        .card-item.disabled .card-label {
+            color: var(--text-tertiary);
+        }
+
+        /* Modal */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            z-index: 1000;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.4s ease;
+        }
+
+        .modal-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .modal {
+            background: var(--modal-bg);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border);
+            border-radius: var(--border-radius);
+            padding: 28px;
+            width: 100%;
+            max-width: 400px;
+            max-height: 80vh;
+            overflow-y: auto;
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.3);
+            transform: translateY(20px);
+            transition: transform 0.4s ease;
+        }
+
+        .modal-overlay.active .modal {
+            transform: translateY(0);
+        }
+
+        .modal h2 {
+            margin: 0 0 24px 0;
+            font-size: 1.4rem;
+            font-weight: 600;
+            letter-spacing: -0.5px;
+            background: linear-gradient(135deg, var(--text-gradient-start) 0%, var(--text-gradient-end) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--text-tertiary);
+            margin-bottom: 10px;
+            font-weight: 500;
+        }
+
+        .form-group input[type="text"],
+        .form-group input[type="number"] {
+            width: 100%;
+            padding: 14px 16px;
+            border: 1px solid var(--glass-border);
+            border-radius: var(--border-radius-sm);
+            background: var(--btn-bg);
+            color: var(--text-primary);
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: var(--accent);
+            background: var(--btn-hover-bg);
+            box-shadow: 0 0 0 4px var(--accent-glow);
+        }
+
+        .form-group input::placeholder {
+            color: var(--text-tertiary);
+        }
+
+        .checkbox-group {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 8px 0;
+        }
+
+        .checkbox-group input[type="checkbox"] {
+            width: 20px;
+            height: 20px;
+            accent-color: var(--accent);
+        }
+
+        /* Preset Setting Rows */
+        .preset-setting {
+            background: var(--btn-bg);
+            border: 1px solid var(--btn-border);
+            border-radius: var(--border-radius-sm);
+            padding: 16px;
+            margin-bottom: 12px;
+            transition: all 0.2s ease;
+        }
+
+        .preset-setting:hover {
+            border-color: var(--glass-border);
+        }
+
+        .preset-setting-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 12px;
+        }
+
+        .preset-setting-header input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+            accent-color: var(--accent);
+        }
+
+        .preset-setting-header label {
+            font-size: 0.9rem;
+            font-weight: 500;
+            margin: 0;
+            color: var(--text-secondary);
+        }
+
+        .preset-setting-value {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding-left: 30px;
+        }
+
+        .preset-setting-value input[type="number"] {
+            width: 80px;
+            padding: 10px;
+            border: 1px solid var(--glass-border);
+            border-radius: 8px;
+            background: var(--btn-bg);
+            color: var(--text-primary);
+            font-size: 1rem;
+            text-align: center;
+            transition: all 0.2s ease;
+        }
+
+        .preset-setting-value input[type="number"]:focus {
+            outline: none;
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px var(--accent-glow);
+        }
+
+        .toggle-btn {
+            background: var(--btn-bg);
+            border: 1px solid var(--btn-border);
+            border-radius: 8px;
+            padding: 10px 24px;
+            color: var(--text-secondary);
+            font-size: 0.8rem;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            min-width: 70px;
+        }
+
+        .toggle-btn:hover {
+            background: var(--btn-hover-bg);
+        }
+
+        .toggle-btn.active {
+            background: linear-gradient(135deg, var(--success), rgba(0, 212, 170, 0.8));
+            border-color: var(--success);
+            color: var(--bg-primary);
+            box-shadow: 0 4px 15px var(--success-glow);
+        }
+
+        .modal-buttons {
+            display: flex;
+            gap: 12px;
+            margin-top: 28px;
+        }
+
+        .modal-btn {
+            flex: 1;
+            padding: 16px;
+            border: none;
+            border-radius: var(--border-radius-sm);
+            font-size: 0.9rem;
+            font-weight: 600;
+            letter-spacing: 0.3px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .modal-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 50%;
+            background: linear-gradient(180deg, rgba(255,255,255,0.1) 0%, transparent 100%);
+            pointer-events: none;
+        }
+
+        .modal-btn.primary {
+            background: linear-gradient(135deg, var(--accent), rgba(255, 77, 109, 0.8));
+            color: white;
+            box-shadow: 0 4px 15px var(--accent-glow);
+        }
+
+        .modal-btn.primary:hover {
+            box-shadow: 0 6px 25px var(--accent-glow);
+            transform: translateY(-2px);
+        }
+
+        .modal-btn.secondary {
+            background: var(--btn-bg);
+            border: 1px solid var(--btn-border);
+            color: var(--text-secondary);
+        }
+
+        .modal-btn.secondary:hover {
+            background: var(--btn-hover-bg);
+            color: var(--text-primary);
+        }
+
+        .modal-btn:active {
+            transform: scale(0.97);
+        }
+
+        /* Empty state */
+        .empty-state {
+            text-align: center;
+            padding: 32px 24px;
+            color: var(--text-tertiary);
+            font-size: 0.9rem;
+        }
+
+        /* Loading */
+        .loading {
+            text-align: center;
+            padding: 60px 24px;
+            color: var(--text-tertiary);
+            font-size: 1rem;
+            font-weight: 300;
+        }
+
+        .loading::after {
+            content: '';
+            display: inline-block;
+            animation: dots 1.5s infinite;
+        }
+
+        @keyframes dots {
+            0%, 20% { content: '.'; }
+            40% { content: '..'; }
+            60%, 100% { content: '...'; }
+        }
+
+        /* Scrollbar styling */
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--glass-border);
+            border-radius: 3px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--glass-highlight);
+        }
+
+        /* Number input spinner hide */
+        input[type="number"]::-webkit-inner-spin-button,
+        input[type="number"]::-webkit-outer-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+
+        input[type="number"] {
+            -moz-appearance: textfield;
+        }
+
+        /* Controls visibility */
+        #controls {
+            display: none;
+        }
+
+        #controls.visible {
+            display: block;
+        }
+
+        /* Responsive - Tablet and Desktop */
+        @media (min-width: 768px) {
+            #controls.visible {
+                display: grid;
+            }
+            .container {
+                max-width: 900px;
+                padding: 32px;
+            }
+
+            .header {
+                padding: 20px 0;
+                margin-bottom: 32px;
+            }
+
+            .header h1 {
+                font-size: 2rem;
+            }
+
+            #controls {
+                display: grid;
+                grid-template-columns: 1fr 1fr;
+                grid-template-rows: auto auto auto;
+                gap: 24px;
+            }
+
+            /* Cards are positioned by their data-card-id for flexibility with reordering */
+            #controls .card[data-card-id="input"] {
+                grid-column: 1 / -1;
+            }
+
+            #controls .card[data-card-id="volume"],
+            #controls .card[data-card-id="loudness"] {
+                grid-column: span 1;
+            }
+
+            #controls .card[data-card-id="upmix"],
+            #controls .card[data-card-id="presets"] {
+                grid-column: 1 / -1;
+            }
+
+            .card {
+                padding: 28px;
+                margin-bottom: 0;
+            }
+
+            .card-title {
+                font-size: 0.75rem;
+                margin-bottom: 24px;
+            }
+
+            .control-value {
+                font-size: 4.5rem;
+            }
+
+            .control-header {
+                margin-bottom: 24px;
+            }
+
+            .input-grid {
+                gap: 12px;
+            }
+
+            .input-btn {
+                padding: 16px 12px;
+                font-size: 0.85rem;
+                min-height: 56px;
+            }
+
+            .ctrl-btn {
+                padding: 18px 12px;
+                font-size: 1.1rem;
+                min-height: 58px;
+            }
+
+            .ctrl-btn.level-btn {
+                padding: 14px 8px;
+                font-size: 0.9rem;
+                min-height: 48px;
+            }
+
+            .control-buttons {
+                gap: 12px;
+            }
+
+            .preset-list {
+                display: grid;
+                grid-template-columns: repeat(2, 1fr);
+                gap: 16px;
+            }
+
+            .preset-item {
+                padding: 20px;
+            }
+
+            .add-preset-btn {
+                grid-column: 1 / -1;
+                padding: 20px;
+            }
+
+            .settings-btn {
+                bottom: 32px;
+                right: 32px;
+                width: 56px;
+                height: 56px;
+                font-size: 1.4rem;
+            }
+        }
+
+        /* Large Desktop */
+        @media (min-width: 1200px) {
+            .container {
+                max-width: 1100px;
+                padding: 40px;
+            }
+
+            .header h1 {
+                font-size: 2.2rem;
+            }
+
+            #controls {
+                gap: 28px;
+            }
+
+            .card {
+                padding: 32px;
+            }
+
+            .control-value {
+                font-size: 5rem;
+            }
+
+            .input-grid {
+                grid-template-columns: repeat(6, 1fr);
+            }
+
+            .preset-list {
+                grid-template-columns: repeat(3, 1fr);
+            }
+        }
+
+        /* Ultra-wide */
+        @media (min-width: 1600px) {
+            .container {
+                max-width: 1400px;
+            }
+
+            #controls {
+                grid-template-columns: 1fr 1fr 1fr;
+            }
+
+            /* Use data-card-id for positioning flexibility */
+            #controls .card[data-card-id="input"] {
+                grid-column: span 1;
+                grid-row: span 2;
+            }
+
+            #controls .card[data-card-id="volume"],
+            #controls .card[data-card-id="loudness"],
+            #controls .card[data-card-id="upmix"] {
+                grid-column: span 1;
+            }
+
+            #controls .card[data-card-id="presets"] {
+                grid-column: 2 / -1;
+            }
+
+            .input-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .preset-list {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>HTP-1 Controller</h1>
+            <div style="display: flex; align-items: center; gap: 16px;">
+                <button class="theme-toggle" id="theme-toggle" onclick="toggleTheme()">
+                    <span class="icon" id="theme-icon">&#9790;</span>
+                </button>
+                <div class="connection-status">
+                    <span id="connection-text">Disconnected</span>
+                    <div class="status-dot" id="status-dot"></div>
+                </div>
+            </div>
+        </div>
+
+        <div id="main-content">
+            <div class="loading" id="loading">Connecting</div>
+
+            <div id="controls">
+                <!-- Input Selection -->
+                <div class="card" id="input-card" data-card-id="input">
+                    <div class="card-title">Input</div>
+                    <div class="input-grid" id="input-grid">
+                        <!-- Populated dynamically -->
+                    </div>
+                </div>
+
+                <!-- Volume Control -->
+                <div class="card" id="volume-card" data-card-id="volume">
+                    <div class="card-title">Volume <span class="status-indicator" id="volume-status"></span></div>
+                    <div class="control-section">
+                        <div class="control-header">
+                            <div class="control-value" id="volume-display">--</div>
+                        </div>
+                        <div class="control-buttons">
+                            <button class="ctrl-btn" onclick="adjustVolume(-3)">-3</button>
+                            <button class="ctrl-btn" onclick="adjustVolume(-1)">-1</button>
+                            <button class="ctrl-btn mute-btn" id="mute-btn" onclick="toggleMute()">MUTE</button>
+                            <button class="ctrl-btn" onclick="adjustVolume(1)">+1</button>
+                            <button class="ctrl-btn" onclick="adjustVolume(3)">+3</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Loudness Control -->
+                <div class="card" id="loudness-card" data-card-id="loudness">
+                    <div class="card-title">Loudness <span class="status-indicator" id="loudness-status"></span></div>
+                    <div class="control-section">
+                        <div class="control-header">
+                            <div class="control-value-wrapper">
+                                <div class="control-value editable" id="loudness-display" onclick="startEditLoudness()">--</div>
+                                <input type="number" class="control-value-input" id="loudness-input" min="50" max="90" onkeydown="handleLoudnessInputKey(event)" onblur="cancelEditLoudness()">
+                            </div>
+                        </div>
+                        <div class="control-buttons">
+                            <button class="ctrl-btn" onclick="adjustLoudness(-3)">-3</button>
+                            <button class="ctrl-btn" onclick="adjustLoudness(-1)">-1</button>
+                            <button class="ctrl-btn off-btn" id="loudness-off-btn" onclick="toggleLoudness()">OFF</button>
+                            <button class="ctrl-btn" onclick="adjustLoudness(1)">+1</button>
+                            <button class="ctrl-btn" onclick="adjustLoudness(3)">+3</button>
+                        </div>
+                        <div class="control-buttons" style="margin-top: 8px;">
+                            <button class="ctrl-btn level-btn" id="loud-50" onclick="setLoudnessLevel(50)">50</button>
+                            <button class="ctrl-btn level-btn" id="loud-60" onclick="setLoudnessLevel(60)">60</button>
+                            <button class="ctrl-btn level-btn" id="loud-70" onclick="setLoudnessLevel(70)">70</button>
+                            <button class="ctrl-btn level-btn" id="loud-80" onclick="setLoudnessLevel(80)">80</button>
+                            <button class="ctrl-btn level-btn" id="loud-90" onclick="setLoudnessLevel(90)">90</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Upmix Control -->
+                <div class="card" id="upmix-card" data-card-id="upmix">
+                    <div class="card-title">Upmixer</div>
+                    <div class="upmix-grid" id="upmix-grid">
+                        <!-- Populated dynamically -->
+                    </div>
+                </div>
+
+                <!-- Presets -->
+                <div class="card" id="presets-card" data-card-id="presets">
+                    <div class="card-title">Presets</div>
+                    <div class="preset-list" id="preset-list">
+                        <!-- Populated dynamically -->
+                    </div>
+                    <button class="add-preset-btn" onclick="openPresetModal()">+ Save Current Settings</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Settings Button -->
+    <button class="settings-btn" onclick="openSettingsModal()">&#9881;</button>
+
+    <!-- Settings Modal -->
+    <div class="modal-overlay" id="settings-modal">
+        <div class="modal">
+            <h2>Settings</h2>
+            <div class="form-group">
+                <label>HTP-1 IP Address</label>
+                <input type="text" id="ip-input" placeholder="e.g., 192.168.1.100">
+            </div>
+
+            <div class="card-manager">
+                <div class="card-manager-title">Visible Cards (drag to reorder)</div>
+                <div class="card-list" id="card-list">
+                    <!-- Populated dynamically -->
+                </div>
+            </div>
+
+            <div class="modal-buttons">
+                <button class="modal-btn secondary" onclick="closeSettingsModal()">Cancel</button>
+                <button class="modal-btn primary" onclick="saveSettings()">Save & Connect</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Preset Modal -->
+    <div class="modal-overlay" id="preset-modal">
+        <div class="modal">
+            <h2>Save Preset</h2>
+            <div class="form-group">
+                <label>Preset Name</label>
+                <input type="text" id="preset-name-input" placeholder="e.g., Movie Night">
+            </div>
+
+            <div class="form-group">
+                <label>Settings to include:</label>
+
+                <!-- Volume Setting -->
+                <div class="preset-setting">
+                    <div class="preset-setting-header">
+                        <input type="checkbox" id="preset-include-volume" checked>
+                        <label for="preset-include-volume">Volume</label>
+                    </div>
+                    <div class="preset-setting-value">
+                        <input type="number" id="preset-volume-input" min="-100" max="0" step="1"> dB
+                    </div>
+                </div>
+
+                <!-- Loudness On/Off Setting -->
+                <div class="preset-setting">
+                    <div class="preset-setting-header">
+                        <input type="checkbox" id="preset-include-loudness-enabled" checked>
+                        <label for="preset-include-loudness-enabled">Loudness On/Off</label>
+                    </div>
+                    <div class="preset-setting-value">
+                        <button class="toggle-btn" id="preset-loudness-toggle" onclick="togglePresetLoudness()">
+                            <span id="preset-loudness-toggle-text">ON</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Loudness Level Setting -->
+                <div class="preset-setting">
+                    <div class="preset-setting-header">
+                        <input type="checkbox" id="preset-include-loudness-level" checked>
+                        <label for="preset-include-loudness-level">Loudness Level</label>
+                    </div>
+                    <div class="preset-setting-value">
+                        <input type="number" id="preset-loudness-level-input" min="50" max="90" step="1">
+                    </div>
+                </div>
+            </div>
+
+            <div class="modal-buttons">
+                <button class="modal-btn secondary" onclick="closePresetModal()">Cancel</button>
+                <button class="modal-btn primary" onclick="savePreset()">Save Preset</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // State
+        let socket = null;
+        let mso = {};
+        let reconnectTimeout = null;
+        let lastLoudnessLevel = 70; // Track loudness level even when OFF
+        const STORAGE_KEY_IP = 'htp1_ip';
+        const STORAGE_KEY_PRESETS = 'htp1_presets';
+        const STORAGE_KEY_LAST_LOUDNESS = 'htp1_last_loudness';
+        const STORAGE_KEY_THEME = 'htp1_theme';
+        const STORAGE_KEY_CARDS = 'htp1_cards';
+
+        // Card configuration
+        const CARD_CONFIG = {
+            input: { id: 'input-card', label: 'Input Selection' },
+            volume: { id: 'volume-card', label: 'Volume' },
+            loudness: { id: 'loudness-card', label: 'Loudness' },
+            upmix: { id: 'upmix-card', label: 'Upmixer' },
+            presets: { id: 'presets-card', label: 'Presets' }
+        };
+
+        const DEFAULT_CARD_ORDER = ['input', 'volume', 'loudness', 'upmix', 'presets'];
+        const DEFAULT_CARD_VISIBILITY = { input: true, volume: true, loudness: true, upmix: true, presets: true };
+
+        // Upmixer options
+        const UPMIX_OPTIONS = [
+            { value: 'native', label: 'Native' },
+            { value: 'dolby', label: 'Dolby Surround' },
+            { value: 'dts', label: 'DTS Neural:X' },
+            { value: 'auro', label: 'Auro-3D' },
+            { value: 'stereo', label: 'Stereo' }
+        ];
+
+        // Preset modal state
+        let presetLoudnessEnabled = true;
+
+        // Get stored IP (no default - user must configure)
+        function getStoredIP() {
+            return localStorage.getItem(STORAGE_KEY_IP) || '';
+        }
+
+        // Get/set stored loudness level (for when loudness is OFF)
+        function getStoredLoudnessLevel() {
+            return parseInt(localStorage.getItem(STORAGE_KEY_LAST_LOUDNESS)) || 70;
+        }
+
+        function saveLastLoudnessLevel(level) {
+            lastLoudnessLevel = level;
+            localStorage.setItem(STORAGE_KEY_LAST_LOUDNESS, level);
+        }
+
+        // Get stored presets
+        function getStoredPresets() {
+            try {
+                return JSON.parse(localStorage.getItem(STORAGE_KEY_PRESETS)) || [];
+            } catch {
+                return [];
+            }
+        }
+
+        // Save presets
+        function saveStoredPresets(presets) {
+            localStorage.setItem(STORAGE_KEY_PRESETS, JSON.stringify(presets));
+        }
+
+        // Connect WebSocket
+        function connect() {
+            const ip = getStoredIP();
+            if (!ip) {
+                openSettingsModal();
+                return;
+            }
+
+            document.getElementById('loading').style.display = 'block';
+            document.getElementById('controls').classList.remove('visible');
+            document.getElementById('connection-text').textContent = 'Connecting...';
+            document.getElementById('status-dot').classList.remove('connected');
+
+            if (socket) {
+                socket.close();
+            }
+
+            try {
+                socket = new WebSocket(`ws://${ip}/ws/controller`);
+
+                socket.onopen = () => {
+                    console.log('Connected to HTP-1');
+                    document.getElementById('connection-text').textContent = 'Connected';
+                    document.getElementById('status-dot').classList.add('connected');
+                    socket.send('getmso');
+                };
+
+                socket.onmessage = (event) => {
+                    handleMessage(event.data);
+                };
+
+                socket.onclose = () => {
+                    console.log('Disconnected from HTP-1');
+                    document.getElementById('connection-text').textContent = 'Disconnected';
+                    document.getElementById('status-dot').classList.remove('connected');
+
+                    // Auto-reconnect after 3 seconds
+                    clearTimeout(reconnectTimeout);
+                    reconnectTimeout = setTimeout(connect, 3000);
+                };
+
+                socket.onerror = (err) => {
+                    console.error('WebSocket error:', err);
+                };
+            } catch (err) {
+                console.error('Connection error:', err);
+                document.getElementById('loading').textContent = 'Connection failed. Check settings.';
+            }
+        }
+
+        // Handle incoming messages
+        function handleMessage(data) {
+            const spaceIndex = data.indexOf(' ');
+            const verb = spaceIndex > 0 ? data.slice(0, spaceIndex) : data;
+            const arg = spaceIndex > 0 ? data.slice(spaceIndex + 1) : null;
+
+            switch (verb) {
+                case 'mso':
+                    mso = JSON.parse(arg);
+                    document.getElementById('loading').style.display = 'none';
+                    document.getElementById('controls').classList.add('visible');
+                    updateUI();
+                    break;
+                case 'msoupdate':
+                    const patch = JSON.parse(arg);
+                    applyPatch(mso, patch);
+                    updateUI();
+                    break;
+            }
+        }
+
+        // Simple JSON Patch apply
+        function applyPatch(obj, patches) {
+            patches.forEach(patch => {
+                if (patch.op === 'replace' || patch.op === 'add') {
+                    const pathParts = patch.path.split('/').filter(p => p);
+                    let current = obj;
+                    for (let i = 0; i < pathParts.length - 1; i++) {
+                        current = current[pathParts[i]];
+                    }
+                    current[pathParts[pathParts.length - 1]] = patch.value;
+                }
+            });
+        }
+
+        // Send command to HTP-1
+        function sendChange(path, value) {
+            if (!socket || socket.readyState !== WebSocket.OPEN) return;
+            const patch = [{ op: 'replace', path: path, value: value }];
+            socket.send('changemso ' + JSON.stringify(patch));
+        }
+
+        // Update UI from MSO state
+        function updateUI() {
+            updateInputGrid();
+            updateVolumeDisplay();
+            updateLoudnessDisplay();
+            updateUpmixGrid();
+            updatePresetList();
+        }
+
+        // Input grid
+        function updateInputGrid() {
+            const grid = document.getElementById('input-grid');
+            if (!mso.inputs) return;
+
+            const visibleInputs = Object.entries(mso.inputs)
+                .filter(([key, val]) => val.visible)
+                .slice(0, 12);
+
+            grid.innerHTML = visibleInputs.map(([key, val]) => {
+                const isActive = mso.input === key;
+                const label = val.label || getInputLabel(key);
+                return `<button class="input-btn ${isActive ? 'active' : ''}" onclick="selectInput('${key}')">${label}</button>`;
+            }).join('');
+        }
+
+        function getInputLabel(key) {
+            if (key.startsWith('h') && key.length === 2) return 'HDMI ' + key[1];
+            if (key.startsWith('a') && key.length === 2) return 'Analog ' + key[1];
+            if (key.startsWith('spdif')) return 'COAX ' + key[5];
+            if (key.startsWith('optical')) return 'Optical ' + key[7];
+            if (key === 'tv') return 'TV/ARC';
+            if (key === 'roon') return 'Roon';
+            if (key === 'aes') return 'AES/EBU';
+            if (key === 'b') return 'Bluetooth';
+            if (key === 'usb') return 'USB';
+            return key.toUpperCase();
+        }
+
+        function selectInput(input) {
+            sendChange('/input', input);
+            mso.input = input;
+            updateInputGrid();
+        }
+
+        // Get display volume (offset by zero point)
+        function getDisplayVolume() {
+            if (mso.volume === undefined) return null;
+            const zeroPoint = (mso.cal && mso.cal.zeroPoint !== undefined) ? mso.cal.zeroPoint : 0;
+            return mso.volume - zeroPoint;
+        }
+
+        // Volume
+        function updateVolumeDisplay() {
+            const display = document.getElementById('volume-display');
+            const muteBtn = document.getElementById('mute-btn');
+            const statusIndicator = document.getElementById('volume-status');
+
+            if (mso.muted) {
+                display.textContent = 'MUTED';
+                display.classList.add('muted');
+                muteBtn.classList.add('active');
+                statusIndicator.classList.add('muted');
+                statusIndicator.classList.remove('active');
+            } else {
+                const displayVol = getDisplayVolume();
+                display.textContent = (displayVol !== null ? displayVol : '--') + ' dB';
+                display.classList.remove('muted');
+                muteBtn.classList.remove('active');
+                statusIndicator.classList.remove('muted');
+                statusIndicator.classList.add('active');
+            }
+        }
+
+        function adjustVolume(delta) {
+            if (mso.volume === undefined) return;
+            const newVol = Math.max(-100, Math.min(0, mso.volume + delta));
+            sendChange('/volume', newVol);
+            mso.volume = newVol;
+            updateVolumeDisplay();
+        }
+
+        function toggleMute() {
+            const newMuted = !mso.muted;
+            sendChange('/muted', newMuted);
+            mso.muted = newMuted;
+            updateVolumeDisplay();
+        }
+
+        // Get current loudness calibration level
+        function getCurrentLoudnessLevel() {
+            if (mso.loudnessCal !== undefined) {
+                return mso.loudnessCal;
+            }
+            return lastLoudnessLevel;
+        }
+
+        // Loudness
+        function updateLoudnessDisplay() {
+            const display = document.getElementById('loudness-display');
+            const offBtn = document.getElementById('loudness-off-btn');
+            const statusIndicator = document.getElementById('loudness-status');
+
+            // Track loudness level from loudnessCal
+            if (mso.loudnessCal !== undefined) {
+                saveLastLoudnessLevel(mso.loudnessCal);
+            }
+
+            const level = getCurrentLoudnessLevel();
+            const isOff = mso.loudness !== 'on';
+
+            if (isOff) {
+                display.innerHTML = `<span style="color: var(--text-tertiary);">OFF</span> <span style="font-size: 1.5rem; opacity: 0.4;">(${level})</span>`;
+                display.classList.add('off');
+                offBtn.classList.add('active');
+                statusIndicator.classList.remove('active');
+            } else {
+                display.textContent = level;
+                display.classList.remove('off');
+                offBtn.classList.remove('active');
+                statusIndicator.classList.add('active');
+            }
+
+            // Update level button highlights
+            [50, 60, 70, 80, 90].forEach(val => {
+                const btn = document.getElementById(`loud-${val}`);
+                if (btn) {
+                    btn.classList.toggle('active', level === val);
+                }
+            });
+        }
+
+        function setLoudnessLevel(level) {
+            sendChange('/loudnessCal', level);
+            mso.loudnessCal = level;
+            // Also turn on loudness if it was off
+            if (mso.loudness !== 'on') {
+                sendChange('/loudness', 'on');
+                mso.loudness = 'on';
+            }
+            updateLoudnessDisplay();
+        }
+
+        function adjustLoudness(delta) {
+            const current = getCurrentLoudnessLevel();
+            const newVal = Math.max(50, Math.min(90, current + delta));
+            sendChange('/loudnessCal', newVal);
+            mso.loudnessCal = newVal;
+            // Also turn on loudness if it was off
+            if (mso.loudness !== 'on') {
+                sendChange('/loudness', 'on');
+                mso.loudness = 'on';
+            }
+            updateLoudnessDisplay();
+        }
+
+        function toggleLoudness() {
+            if (mso.loudness !== 'on') {
+                sendChange('/loudness', 'on');
+                mso.loudness = 'on';
+            } else {
+                sendChange('/loudness', 'off');
+                mso.loudness = 'off';
+            }
+            updateLoudnessDisplay();
+        }
+
+        // Editable loudness input
+        let editLoudnessJustOpened = false;
+
+        function startEditLoudness() {
+            const display = document.getElementById('loudness-display');
+            const input = document.getElementById('loudness-input');
+            const level = getCurrentLoudnessLevel();
+
+            editLoudnessJustOpened = true;
+            input.value = level;
+            input.classList.add('visible');
+            display.style.visibility = 'hidden';
+
+            // Use setTimeout to ensure focus happens after click event completes
+            setTimeout(() => {
+                input.focus();
+                input.select();
+                // Reset flag after a short delay
+                setTimeout(() => { editLoudnessJustOpened = false; }, 100);
+            }, 10);
+        }
+
+        function cancelEditLoudness() {
+            // Don't cancel if we just opened
+            if (editLoudnessJustOpened) return;
+
+            const display = document.getElementById('loudness-display');
+            const input = document.getElementById('loudness-input');
+
+            input.classList.remove('visible');
+            display.style.visibility = 'visible';
+        }
+
+        function handleLoudnessInputKey(event) {
+            if (event.key === 'Enter') {
+                const input = document.getElementById('loudness-input');
+                let value = parseInt(input.value);
+
+                // Clamp to valid range
+                value = Math.max(50, Math.min(90, value));
+
+                editLoudnessJustOpened = false; // Allow closing
+                setLoudnessLevel(value);
+                cancelEditLoudness();
+                event.preventDefault();
+            } else if (event.key === 'Escape') {
+                editLoudnessJustOpened = false; // Allow closing
+                cancelEditLoudness();
+                event.preventDefault();
+            }
+        }
+
+        // Presets
+        function updatePresetList() {
+            const list = document.getElementById('preset-list');
+            const presets = getStoredPresets();
+
+            if (presets.length === 0) {
+                list.innerHTML = '<div class="empty-state">No presets saved yet</div>';
+                return;
+            }
+
+            list.innerHTML = presets.map((preset, index) => {
+                const details = [];
+                if (preset.volume !== undefined) {
+                    // Use stored displayVolume if available, otherwise show raw volume
+                    const volDisplay = preset.displayVolume !== undefined ? preset.displayVolume : preset.volume;
+                    details.push(`Vol: ${volDisplay} dB`);
+                }
+                if (preset.loudnessEnabled !== undefined) {
+                    details.push(`Loudness: ${preset.loudnessEnabled ? 'ON' : 'OFF'}`);
+                }
+                if (preset.loudnessLevel !== undefined) {
+                    details.push(`Level: ${preset.loudnessLevel}`);
+                }
+
+                return `
+                    <div class="preset-item" onclick="applyPreset(${index})">
+                        <div class="preset-info">
+                            <div class="preset-name">${escapeHtml(preset.label)}</div>
+                            <div class="preset-details">
+                                ${details.map(d => `<span class="preset-detail">${d}</span>`).join('')}
+                            </div>
+                        </div>
+                        <button class="preset-delete" onclick="event.stopPropagation(); deletePreset(${index})">×</button>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function applyPreset(index) {
+            const presets = getStoredPresets();
+            const preset = presets[index];
+            if (!preset) return;
+
+            if (preset.volume !== undefined) {
+                sendChange('/volume', preset.volume);
+                mso.volume = preset.volume;
+            }
+
+            // Apply loudness level first (if specified)
+            if (preset.loudnessLevel !== undefined) {
+                sendChange('/loudnessCal', preset.loudnessLevel);
+                mso.loudnessCal = preset.loudnessLevel;
+            }
+
+            // Apply loudness on/off
+            if (preset.loudnessEnabled !== undefined) {
+                if (preset.loudnessEnabled) {
+                    sendChange('/loudness', 'on');
+                    mso.loudness = 'on';
+                } else {
+                    sendChange('/loudness', 'off');
+                    mso.loudness = 'off';
+                }
+            }
+
+            updateUI();
+        }
+
+        function deletePreset(index) {
+            const presets = getStoredPresets();
+            presets.splice(index, 1);
+            saveStoredPresets(presets);
+            updatePresetList();
+        }
+
+        // Preset Modal
+        function openPresetModal() {
+            const presets = getStoredPresets();
+            if (presets.length >= 20) {
+                alert('Maximum 20 presets allowed. Delete some to add more.');
+                return;
+            }
+
+            // Reset name
+            document.getElementById('preset-name-input').value = '';
+
+            // Enable all checkboxes by default
+            document.getElementById('preset-include-volume').checked = true;
+            document.getElementById('preset-include-loudness-enabled').checked = true;
+            document.getElementById('preset-include-loudness-level').checked = true;
+
+            // Load current values as defaults
+            const displayVol = getDisplayVolume();
+            document.getElementById('preset-volume-input').value = displayVol !== null ? displayVol : -20;
+
+            // Set loudness enabled state
+            presetLoudnessEnabled = mso.loudness === 'on';
+            updatePresetLoudnessToggle();
+
+            // Set loudness level
+            document.getElementById('preset-loudness-level-input').value = getCurrentLoudnessLevel();
+
+            document.getElementById('preset-modal').classList.add('active');
+            document.getElementById('preset-name-input').focus();
+        }
+
+        function closePresetModal() {
+            document.getElementById('preset-modal').classList.remove('active');
+        }
+
+        function togglePresetLoudness() {
+            presetLoudnessEnabled = !presetLoudnessEnabled;
+            updatePresetLoudnessToggle();
+        }
+
+        function updatePresetLoudnessToggle() {
+            const btn = document.getElementById('preset-loudness-toggle');
+            const text = document.getElementById('preset-loudness-toggle-text');
+            btn.classList.toggle('active', presetLoudnessEnabled);
+            text.textContent = presetLoudnessEnabled ? 'ON' : 'OFF';
+        }
+
+        function savePreset() {
+            const name = document.getElementById('preset-name-input').value.trim();
+            if (!name) {
+                alert('Please enter a preset name');
+                return;
+            }
+
+            const preset = { label: name };
+
+            if (document.getElementById('preset-include-volume').checked) {
+                // Get volume from input and convert back to raw volume using zero point
+                const displayVol = parseInt(document.getElementById('preset-volume-input').value) || 0;
+                const zeroPoint = (mso.cal && mso.cal.zeroPoint !== undefined) ? mso.cal.zeroPoint : 0;
+                preset.volume = displayVol + zeroPoint;
+                preset.displayVolume = displayVol;
+            }
+
+            if (document.getElementById('preset-include-loudness-enabled').checked) {
+                preset.loudnessEnabled = presetLoudnessEnabled;
+            }
+
+            if (document.getElementById('preset-include-loudness-level').checked) {
+                preset.loudnessLevel = parseInt(document.getElementById('preset-loudness-level-input').value) || 70;
+            }
+
+            const presets = getStoredPresets();
+            presets.push(preset);
+            saveStoredPresets(presets);
+
+            closePresetModal();
+            updatePresetList();
+        }
+
+        // Settings Modal
+        function openSettingsModal() {
+            document.getElementById('ip-input').value = getStoredIP();
+            renderCardManager();
+            document.getElementById('settings-modal').classList.add('active');
+        }
+
+        function closeSettingsModal() {
+            document.getElementById('settings-modal').classList.remove('active');
+        }
+
+        function saveSettings() {
+            const ip = document.getElementById('ip-input').value.trim();
+            if (!ip) {
+                alert('Please enter an IP address');
+                return;
+            }
+
+            localStorage.setItem(STORAGE_KEY_IP, ip);
+
+            // Save card configuration
+            if (tempCardConfig) {
+                saveCardConfig(tempCardConfig);
+                applyCardLayout();
+            }
+
+            closeSettingsModal();
+            connect();
+        }
+
+        // Upmix
+        function updateUpmixGrid() {
+            const grid = document.getElementById('upmix-grid');
+            const currentUpmix = mso.upmix?.select || 'native';
+
+            grid.innerHTML = UPMIX_OPTIONS.map(opt => {
+                const isActive = currentUpmix === opt.value;
+                return `<button class="upmix-btn ${isActive ? 'active' : ''}" onclick="selectUpmix('${opt.value}')">${opt.label}</button>`;
+            }).join('');
+        }
+
+        function selectUpmix(upmixer) {
+            sendChange('/upmix/select', upmixer);
+            if (!mso.upmix) mso.upmix = {};
+            mso.upmix.select = upmixer;
+            updateUpmixGrid();
+        }
+
+        // Card Management
+        function getCardConfig() {
+            try {
+                const stored = localStorage.getItem(STORAGE_KEY_CARDS);
+                if (stored) {
+                    const config = JSON.parse(stored);
+                    // Ensure all cards exist in config (in case new cards were added)
+                    const order = config.order || DEFAULT_CARD_ORDER;
+                    const visibility = { ...DEFAULT_CARD_VISIBILITY, ...config.visibility };
+                    // Add any missing cards to the order
+                    DEFAULT_CARD_ORDER.forEach(cardId => {
+                        if (!order.includes(cardId)) {
+                            order.push(cardId);
+                        }
+                    });
+                    return { order, visibility };
+                }
+            } catch (e) {
+                console.error('Error loading card config:', e);
+            }
+            return { order: [...DEFAULT_CARD_ORDER], visibility: { ...DEFAULT_CARD_VISIBILITY } };
+        }
+
+        function saveCardConfig(config) {
+            localStorage.setItem(STORAGE_KEY_CARDS, JSON.stringify(config));
+        }
+
+        function applyCardLayout() {
+            const config = getCardConfig();
+            const controls = document.getElementById('controls');
+
+            // Reorder cards based on config
+            config.order.forEach(cardId => {
+                const card = document.getElementById(CARD_CONFIG[cardId]?.id);
+                if (card) {
+                    // Set visibility
+                    card.style.display = config.visibility[cardId] ? '' : 'none';
+                    // Append to reorder (moves to end, so order matters)
+                    controls.appendChild(card);
+                }
+            });
+        }
+
+        // Card manager in settings
+        let tempCardConfig = null;
+        let draggedItem = null;
+
+        function renderCardManager() {
+            const list = document.getElementById('card-list');
+            tempCardConfig = getCardConfig();
+
+            list.innerHTML = tempCardConfig.order.map(cardId => {
+                const card = CARD_CONFIG[cardId];
+                if (!card) return '';
+                const isVisible = tempCardConfig.visibility[cardId];
+                return `
+                    <div class="card-item ${isVisible ? '' : 'disabled'}" data-card-id="${cardId}" draggable="true">
+                        <span class="drag-handle">&#9776;</span>
+                        <input type="checkbox" ${isVisible ? 'checked' : ''} onchange="toggleCardVisibility('${cardId}', this.checked)">
+                        <span class="card-label">${card.label}</span>
+                    </div>
+                `;
+            }).join('');
+
+            // Add drag event listeners
+            list.querySelectorAll('.card-item').forEach(item => {
+                item.addEventListener('dragstart', handleDragStart);
+                item.addEventListener('dragend', handleDragEnd);
+                item.addEventListener('dragover', handleDragOver);
+                item.addEventListener('dragleave', handleDragLeave);
+                item.addEventListener('drop', handleDrop);
+            });
+        }
+
+        function toggleCardVisibility(cardId, visible) {
+            if (tempCardConfig) {
+                tempCardConfig.visibility[cardId] = visible;
+                // Update UI immediately
+                const item = document.querySelector(`.card-item[data-card-id="${cardId}"]`);
+                if (item) {
+                    item.classList.toggle('disabled', !visible);
+                }
+            }
+        }
+
+        function handleDragStart(e) {
+            draggedItem = e.target;
+            e.target.classList.add('dragging');
+            e.dataTransfer.effectAllowed = 'move';
+        }
+
+        function handleDragEnd(e) {
+            e.target.classList.remove('dragging');
+            document.querySelectorAll('.card-item').forEach(item => {
+                item.classList.remove('drag-over');
+            });
+            draggedItem = null;
+        }
+
+        function handleDragOver(e) {
+            e.preventDefault();
+            e.dataTransfer.dropEffect = 'move';
+            if (e.currentTarget !== draggedItem) {
+                e.currentTarget.classList.add('drag-over');
+            }
+        }
+
+        function handleDragLeave(e) {
+            e.currentTarget.classList.remove('drag-over');
+        }
+
+        function handleDrop(e) {
+            e.preventDefault();
+            e.currentTarget.classList.remove('drag-over');
+
+            if (draggedItem && e.currentTarget !== draggedItem) {
+                const list = document.getElementById('card-list');
+                const items = Array.from(list.querySelectorAll('.card-item'));
+                const draggedIndex = items.indexOf(draggedItem);
+                const targetIndex = items.indexOf(e.currentTarget);
+
+                if (draggedIndex < targetIndex) {
+                    e.currentTarget.parentNode.insertBefore(draggedItem, e.currentTarget.nextSibling);
+                } else {
+                    e.currentTarget.parentNode.insertBefore(draggedItem, e.currentTarget);
+                }
+
+                // Update tempCardConfig order
+                const newOrder = Array.from(list.querySelectorAll('.card-item')).map(item => item.dataset.cardId);
+                tempCardConfig.order = newOrder;
+            }
+        }
+
+        // Utility
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        // Theme Toggle
+        function getStoredTheme() {
+            return localStorage.getItem(STORAGE_KEY_THEME) || 'dark';
+        }
+
+        function setTheme(theme) {
+            if (theme === 'light') {
+                document.documentElement.setAttribute('data-theme', 'light');
+                document.getElementById('theme-icon').innerHTML = '&#9728;'; // Sun
+            } else {
+                document.documentElement.removeAttribute('data-theme');
+                document.getElementById('theme-icon').innerHTML = '&#9790;'; // Moon
+            }
+            localStorage.setItem(STORAGE_KEY_THEME, theme);
+        }
+
+        function toggleTheme() {
+            const currentTheme = document.documentElement.getAttribute('data-theme');
+            const newTheme = currentTheme === 'light' ? 'dark' : 'light';
+            setTheme(newTheme);
+        }
+
+        // Initialize theme immediately (before DOMContentLoaded to prevent flash)
+        (function() {
+            const savedTheme = getStoredTheme();
+            if (savedTheme === 'light') {
+                document.documentElement.setAttribute('data-theme', 'light');
+            }
+        })();
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            // Load saved theme and update icon
+            setTheme(getStoredTheme());
+            // Load last loudness level from storage
+            lastLoudnessLevel = getStoredLoudnessLevel();
+            // Apply saved card layout
+            applyCardLayout();
+            connect();
+        });
+
+        // Handle Enter key in modals
+        document.getElementById('ip-input').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') saveSettings();
+        });
+
+        document.getElementById('preset-name-input').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') savePreset();
+        });
+    </script>
+</body>
+</html>
