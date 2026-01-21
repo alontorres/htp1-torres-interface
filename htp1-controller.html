@@ -559,22 +559,106 @@
             border: 1px solid var(--btn-border);
         }
 
-        .preset-delete {
+        .preset-gear {
             background: none;
             border: none;
             color: var(--text-tertiary);
-            font-size: 1.5rem;
-            font-weight: 300;
+            font-size: 1.1rem;
             cursor: pointer;
-            padding: 4px 8px;
-            margin: -4px -8px;
+            padding: 6px 8px;
+            margin: -6px -8px;
             transition: all 0.2s ease;
             opacity: 0.5;
         }
 
-        .preset-delete:hover {
-            color: var(--accent);
+        .preset-gear:hover {
+            color: var(--text-primary);
             opacity: 1;
+        }
+
+        /* Confirm dialog */
+        .confirm-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(4px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1100;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .confirm-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .confirm-dialog {
+            background: var(--modal-bg);
+            border: 1px solid var(--glass-border);
+            border-radius: var(--border-radius);
+            padding: 24px;
+            max-width: 320px;
+            text-align: center;
+        }
+
+        .confirm-dialog p {
+            margin: 0 0 20px 0;
+            color: var(--text-primary);
+            font-size: 1rem;
+        }
+
+        .confirm-buttons {
+            display: flex;
+            gap: 12px;
+        }
+
+        .confirm-btn {
+            flex: 1;
+            padding: 12px 16px;
+            border: none;
+            border-radius: var(--border-radius-sm);
+            font-size: 0.9rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .confirm-btn.cancel {
+            background: var(--btn-bg);
+            border: 1px solid var(--btn-border);
+            color: var(--text-secondary);
+        }
+
+        .confirm-btn.cancel:hover {
+            background: var(--btn-hover-bg);
+        }
+
+        .confirm-btn.danger {
+            background: var(--accent);
+            color: white;
+        }
+
+        .confirm-btn.danger:hover {
+            opacity: 0.9;
+        }
+
+        /* Delete button in edit modal */
+        .modal-btn.danger {
+            background: transparent;
+            border: 1px solid var(--accent);
+            color: var(--accent);
+        }
+
+        .modal-btn.danger:hover {
+            background: var(--accent);
+            color: white;
         }
 
         .add-preset-btn {
@@ -1522,6 +1606,77 @@
         </div>
     </div>
 
+    <!-- Edit Preset Modal -->
+    <div class="modal-overlay" id="edit-preset-modal">
+        <div class="modal">
+            <h2>Edit Preset</h2>
+            <div class="modal-content">
+                <div class="form-group">
+                    <label>Preset Name</label>
+                    <input type="text" id="edit-preset-name-input" placeholder="e.g., Movie Night">
+                </div>
+
+                <div class="form-group">
+                    <label>Settings to include:</label>
+
+                    <!-- Volume Setting -->
+                    <div class="preset-setting">
+                        <div class="preset-setting-header">
+                            <input type="checkbox" id="edit-preset-include-volume">
+                            <label for="edit-preset-include-volume">Volume</label>
+                        </div>
+                        <div class="preset-setting-value">
+                            <input type="number" id="edit-preset-volume-input" min="-100" max="0" step="1"> dB
+                        </div>
+                    </div>
+
+                    <!-- Loudness On/Off Setting -->
+                    <div class="preset-setting">
+                        <div class="preset-setting-header">
+                            <input type="checkbox" id="edit-preset-include-loudness-enabled">
+                            <label for="edit-preset-include-loudness-enabled">Loudness On/Off</label>
+                        </div>
+                        <div class="preset-setting-value">
+                            <button class="toggle-btn" id="edit-preset-loudness-toggle" onclick="toggleEditPresetLoudness()">
+                                <span id="edit-preset-loudness-toggle-text">ON</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Loudness Level Setting -->
+                    <div class="preset-setting">
+                        <div class="preset-setting-header">
+                            <input type="checkbox" id="edit-preset-include-loudness-level">
+                            <label for="edit-preset-include-loudness-level">Loudness Level</label>
+                        </div>
+                        <div class="preset-setting-value">
+                            <input type="number" id="edit-preset-loudness-level-input" min="50" max="90" step="1">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="modal-buttons" style="flex-direction: column; gap: 10px;">
+                <div style="display: flex; gap: 12px;">
+                    <button class="modal-btn secondary" onclick="closeEditPresetModal()">Cancel</button>
+                    <button class="modal-btn primary" onclick="saveEditedPreset()">Save Changes</button>
+                </div>
+                <button class="modal-btn danger" onclick="confirmDeletePreset()">Delete Preset</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Confirm Delete Dialog -->
+    <div class="confirm-overlay" id="confirm-delete-overlay">
+        <div class="confirm-dialog">
+            <p>Are you sure you want to delete this preset?</p>
+            <div class="confirm-buttons">
+                <button class="confirm-btn cancel" onclick="cancelDeletePreset()">Cancel</button>
+                <button class="confirm-btn danger" onclick="executeDeletePreset()">Delete</button>
+            </div>
+        </div>
+    </div>
+
     <script>
         // State
         let socket = null;
@@ -1956,7 +2111,7 @@
                                 ${details.map(d => `<span class="preset-detail">${d}</span>`).join('')}
                             </div>
                         </div>
-                        <button class="preset-delete" onclick="event.stopPropagation(); deletePreset(${index})">×</button>
+                        <button class="preset-gear" onclick="event.stopPropagation(); openEditPresetModal(${index})">&#9881;</button>
                     </div>
                 `;
             }).join('');
@@ -1992,10 +2147,108 @@
             updateUI();
         }
 
-        function deletePreset(index) {
+        // Edit Preset Modal
+        let editingPresetIndex = null;
+        let editPresetLoudnessEnabled = true;
+
+        function openEditPresetModal(index) {
             const presets = getStoredPresets();
-            presets.splice(index, 1);
+            const preset = presets[index];
+            if (!preset) return;
+
+            editingPresetIndex = index;
+
+            // Set name
+            document.getElementById('edit-preset-name-input').value = preset.label || '';
+
+            // Set volume
+            const hasVolume = preset.volume !== undefined;
+            document.getElementById('edit-preset-include-volume').checked = hasVolume;
+            document.getElementById('edit-preset-volume-input').value = hasVolume ?
+                (preset.displayVolume !== undefined ? preset.displayVolume : preset.volume) : -20;
+
+            // Set loudness enabled
+            const hasLoudnessEnabled = preset.loudnessEnabled !== undefined;
+            document.getElementById('edit-preset-include-loudness-enabled').checked = hasLoudnessEnabled;
+            editPresetLoudnessEnabled = hasLoudnessEnabled ? preset.loudnessEnabled : true;
+            updateEditPresetLoudnessToggle();
+
+            // Set loudness level
+            const hasLoudnessLevel = preset.loudnessLevel !== undefined;
+            document.getElementById('edit-preset-include-loudness-level').checked = hasLoudnessLevel;
+            document.getElementById('edit-preset-loudness-level-input').value = hasLoudnessLevel ? preset.loudnessLevel : 70;
+
+            document.getElementById('edit-preset-modal').classList.add('active');
+        }
+
+        function closeEditPresetModal() {
+            document.getElementById('edit-preset-modal').classList.remove('active');
+            editingPresetIndex = null;
+        }
+
+        function toggleEditPresetLoudness() {
+            editPresetLoudnessEnabled = !editPresetLoudnessEnabled;
+            updateEditPresetLoudnessToggle();
+        }
+
+        function updateEditPresetLoudnessToggle() {
+            const btn = document.getElementById('edit-preset-loudness-toggle');
+            const text = document.getElementById('edit-preset-loudness-toggle-text');
+            btn.classList.toggle('active', editPresetLoudnessEnabled);
+            text.textContent = editPresetLoudnessEnabled ? 'ON' : 'OFF';
+        }
+
+        function saveEditedPreset() {
+            if (editingPresetIndex === null) return;
+
+            const name = document.getElementById('edit-preset-name-input').value.trim();
+            if (!name) {
+                alert('Please enter a preset name');
+                return;
+            }
+
+            const presets = getStoredPresets();
+            const preset = { label: name };
+
+            if (document.getElementById('edit-preset-include-volume').checked) {
+                const displayVol = parseInt(document.getElementById('edit-preset-volume-input').value) || 0;
+                const zeroPoint = (mso.cal && mso.cal.zeroPoint !== undefined) ? mso.cal.zeroPoint : 0;
+                preset.volume = displayVol + zeroPoint;
+                preset.displayVolume = displayVol;
+            }
+
+            if (document.getElementById('edit-preset-include-loudness-enabled').checked) {
+                preset.loudnessEnabled = editPresetLoudnessEnabled;
+            }
+
+            if (document.getElementById('edit-preset-include-loudness-level').checked) {
+                preset.loudnessLevel = parseInt(document.getElementById('edit-preset-loudness-level-input').value) || 70;
+            }
+
+            presets[editingPresetIndex] = preset;
             saveStoredPresets(presets);
+
+            closeEditPresetModal();
+            updatePresetList();
+        }
+
+        function confirmDeletePreset() {
+            document.getElementById('confirm-delete-overlay').classList.add('active');
+        }
+
+        function cancelDeletePreset() {
+            document.getElementById('confirm-delete-overlay').classList.remove('active');
+        }
+
+        function executeDeletePreset() {
+            if (editingPresetIndex === null) return;
+
+            const presets = getStoredPresets();
+            presets.splice(editingPresetIndex, 1);
+            saveStoredPresets(presets);
+
+            document.getElementById('confirm-delete-overlay').classList.remove('active');
+            closeEditPresetModal();
             updatePresetList();
         }
 
